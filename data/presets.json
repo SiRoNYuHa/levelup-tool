@@ -58,41 +58,41 @@
             "속도"
           ],
           "optional": [],
-          "optional_min": 1,
+          "optional_min": 0,
           "min_count": 2,
           "max_count": 9
         },
         {
           "required": [
-            "마력",
-            "마방"
+            "HP",
+            "마력"
           ],
           "optional": [
-            "HP",
-            "기술"
+            "속도",
+            "마방"
           ],
           "optional_min": 1,
           "min_count": 3,
-          "max_count": 4
+          "max_count": 9
         },
         {
           "required": [],
           "optional": [],
-          "optional_min": 1,
+          "optional_min": 0,
+          "min_count": 4,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 0,
           "min_count": 0,
           "max_count": 9
         },
         {
           "required": [],
           "optional": [],
-          "optional_min": 1,
-          "min_count": 0,
-          "max_count": 9
-        },
-        {
-          "required": [],
-          "optional": [],
-          "optional_min": 1,
+          "optional_min": 0,
           "min_count": 0,
           "max_count": 9
         }

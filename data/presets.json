@@ -5,6 +5,15 @@
       "ranks": [
         {
           "required": [
+            "속도"
+          ],
+          "optional": [],
+          "optional_min": 0,
+          "min_count": 2,
+          "max_count": 9
+        },
+        {
+          "required": [
             "힘",
             "속도"
           ],
@@ -15,36 +24,37 @@
         },
         {
           "required": [
-            "방어"
-          ],
-          "optional": [
-            "HP",
             "힘",
-            "기술"
+            "속도"
           ],
-          "optional_min": 1,
+          "optional": [],
+          "optional_min": 0,
           "min_count": 3,
           "max_count": 9
         },
         {
-          "required": [],
-          "optional": [],
-          "optional_min": 0,
-          "min_count": 0,
+          "required": [
+            "힘",
+            "방어"
+          ],
+          "optional": [
+            "HP",
+            "기술"
+          ],
+          "optional_min": 2,
+          "min_count": 4,
           "max_count": 9
         },
         {
           "required": [],
-          "optional": [],
+          "optional": [
+            "HP",
+            "힘",
+            "속도",
+            "기술"
+          ],
           "optional_min": 0,
-          "min_count": 0,
-          "max_count": 9
-        },
-        {
-          "required": [],
-          "optional": [],
-          "optional_min": 0,
-          "min_count": 0,
+          "min_count": 5,
           "max_count": 9
         }
       ]

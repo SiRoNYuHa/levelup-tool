@@ -730,6 +730,116 @@ class StatInputRow(ttk.LabelFrame):
         self.status.set(f"{count}개 가져옴")
 
 
+@dataclass(frozen=True)
+class RunSettings:
+    """계산 버튼을 누른 시점의 최적 경로 설정 스냅샷."""
+
+    rows: list
+    preset: Preset
+    current: dict
+    caps: dict
+    start_index: int
+    start_level: int
+    level_count: int
+    per_level: int | None
+    greedy: bool
+    deletion_cap: int
+
+
+def simulate_with(settings: RunSettings, accept: Callable[[int], bool]) -> PathResult:
+    rows = settings.rows
+    problem = PathProblem(
+        row_stats=rows,
+        rank_at=lambda index, capped: judge_row(rows[index] - capped, settings.preset),
+        is_accepted=accept,
+        start_index=settings.start_index, start_level=settings.start_level,
+        level_count=settings.level_count, max_per_level=settings.per_level,
+        headroom={stat: max(0, settings.caps[stat] - settings.current.get(stat, 0)) for stat in settings.caps},
+    )
+    if settings.greedy:
+        return simulate_greedy(problem)
+    return simulate_limited(problem, settings.deletion_cap)
+
+
+class FinalResultWindow(tk.Toplevel):
+    """체크한 순위만 허용했을 때의 최종 스탯을 시나리오별로 쌓아서 비교하는 창."""
+
+    def __init__(self, master, settings: RunSettings) -> None:
+        super().__init__(master)
+        self.title("최종 결과")
+        self.geometry("1010x420")
+        self.settings = settings
+        self.row_ids: dict[str, str] = {}  # 시나리오 이름 -> 표 줄 id (같은 조합은 갱신)
+
+        top = ttk.Frame(self, padding=8)
+        top.pack(fill="x")
+        ttk.Label(top, text="허용할 순위").pack(side="left")
+        self.vars: list[tk.BooleanVar] = []
+        first_active = next((i for i, c in enumerate(settings.preset.ranks) if c.is_active), None)
+        for index, condition in enumerate(settings.preset.ranks):
+            var = tk.BooleanVar(value=index == first_active)
+            self.vars.append(var)
+            ttk.Checkbutton(
+                top, text=f"{index + 1}순위", variable=var,
+                state="normal" if condition.is_active else "disabled",  # 비어 있는 순위는 선택 불가
+            ).pack(side="left", padx=4)
+        ttk.Button(top, text="추가", command=self.add).pack(side="left", padx=(12, 2))
+        ttk.Button(top, text="비우기", command=self.clear).pack(side="left", padx=2)
+        end_level = settings.start_level + settings.level_count
+        mode = "순서대로 삭제" if settings.greedy else f"전직변경 상한 {settings.deletion_cap}회"
+        ttk.Label(
+            self, foreground="#555", padding=(8, 0),
+            text=f"기준: {settings.start_level}레벨 → {end_level}레벨 / {mode} / 스탯은 최종값(현재 스탯 대비 증가량). "
+                 "같은 조합을 다시 추가하면 그 줄이 갱신돼요.",
+        ).pack(anchor="w")
+
+        columns = ["scenario", "deletions", "received", *[s.label for s in ALL_STATS]]
+        frame = ttk.Frame(self, padding=8)
+        frame.pack(fill="both", expand=True)
+        self.tree = ttk.Treeview(frame, columns=columns, show="headings", selectmode="browse")
+        for key, title, width in (("scenario", "시나리오", 110), ("deletions", "전직변경", 80), ("received", "수령", 110)):
+            self.tree.heading(key, text=title)
+            self.tree.column(key, width=width, anchor="center", stretch=False)
+        for stat in ALL_STATS:
+            self.tree.heading(stat.label, text=stat.label)
+            self.tree.column(stat.label, width=76, anchor="center", stretch=False)
+        scroll = ttk.Scrollbar(frame, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=scroll.set)
+        self.tree.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+
+    @staticmethod
+    def scenario_name(ranks: list[int]) -> str:
+        return f"{ranks[0]}순위만" if len(ranks) == 1 else "+".join(map(str, ranks)) + "순위"
+
+    def add(self) -> None:
+        chosen = [rank for rank, var in enumerate(self.vars, start=1) if var.get()]
+        if not chosen:
+            messagebox.showinfo("최종 결과", "허용할 순위를 하나 이상 체크해 주세요.")
+            return
+        name = self.scenario_name(chosen)
+        try:
+            result = simulate_with(self.settings, lambda rank: rank in chosen)
+        except SearchTooLarge:
+            values = (name, "계산 너무 큼", "", *[""] * len(ALL_STATS))
+        else:
+            infos = annotate(result.outcomes, self.settings.rows, self.settings.current, self.settings.caps)
+            final = infos[-1].stats_after if infos else self.settings.current
+            received = f"{result.accepted}/{result.levels_covered}" + (" (줄 부족)" if result.truncated else "")
+            current = self.settings.current
+            cells = [f"{final.get(stat, 0)}(+{final.get(stat, 0) - current.get(stat, 0)})" for stat in ALL_STATS]
+            values = (name, f"{result.deletions}회", received, *cells)
+        iid = self.row_ids.get(name)
+        if iid is None:
+            self.row_ids[name] = self.tree.insert("", "end", values=values)
+        else:
+            self.tree.item(iid, values=values)
+
+    def clear(self) -> None:
+        self.tree.delete(*self.tree.get_children())
+        self.row_ids.clear()
+
+
 class PathTab(ttk.Frame):
     def __init__(self, master, ctx: AppContext) -> None:
         super().__init__(master, padding=8)
@@ -756,6 +866,9 @@ class PathTab(ttk.Frame):
             *STAT_COLUMNS, Column("verdict", "판정", 70),
             Column("note", "비고", 340, "w"), Column("detail", "상세", 90),
         ]
+        bottom = ttk.Frame(self)
+        bottom.pack(side="bottom", fill="x", pady=(6, 0))
+        ttk.Button(bottom, text="최종 결과", command=self.open_final).pack(side="right")
         self._details: list[RowDetail | None] = []  # 삭제된 줄은 None (상세보기 없음)
         self.view = ResultTable(self, columns, on_cell_click=self._on_cell)
         self.view.pack(fill="both", expand=True)
@@ -802,43 +915,50 @@ class PathTab(ttk.Frame):
             self.start.set(signature[0])
             self.target.set(signature[0] + signature[1])
 
-    def run(self) -> None:
+    def _collect(self) -> RunSettings | None:
+        """화면 입력을 검증해서 설정 스냅샷을 만든다. 문제가 있으면 안내 후 None."""
         table = self.ctx.table
         if not table.rows:
-            return messagebox.showinfo("테이블 없음", "테이블이 비어 있어요. 테이블 탭에서 줄을 추가하거나 캐릭터를 불러와 주세요.")
+            messagebox.showinfo("테이블 없음", "테이블이 비어 있어요. 테이블 탭에서 줄을 추가하거나 캐릭터를 불러와 주세요.")
+            return None
         try:
             preset = self.picker.get_preset()
             current, caps = self.current_row.stat_values(), self.cap_row.stat_values()
         except ValueError as error:
-            return messagebox.showwarning("입력 오류", str(error))
+            messagebox.showwarning("입력 오류", str(error))
+            return None
         start, target = _int_of(self.start, 1), _int_of(self.target, 1)
         start_index = table.index_of_level(start)
         if not 0 <= start_index < len(table) or target <= start:
-            return messagebox.showwarning("입력 오류", "시작/목표 레벨을 확인해 주세요. (시작 레벨은 테이블 범위 안, 목표 > 시작)")
-
-        rows = table.rows
-        accept = allowed_up_to(_int_of(self.allowed, 1))
-        per_level = None if self.per_level_mode.get() == "unlimited" else max(0, _int_of(self.per_level, 0))
-        problem = PathProblem(
-            row_stats=rows,
-            rank_at=lambda index, capped: judge_row(rows[index] - capped, preset),
-            is_accepted=accept,
+            messagebox.showwarning("입력 오류", "시작/목표 레벨을 확인해 주세요. (시작 레벨은 테이블 범위 안, 목표 > 시작)")
+            return None
+        return RunSettings(
+            rows=list(table.rows), preset=preset, current=current, caps=caps,
             start_index=start_index, start_level=start, level_count=target - start,
-            max_per_level=per_level,
-            headroom={stat: max(0, caps[stat] - current.get(stat, 0)) for stat in caps},
+            per_level=None if self.per_level_mode.get() == "unlimited" else max(0, _int_of(self.per_level, 0)),
+            greedy=self.mode.get() == "greedy", deletion_cap=_int_of(self.cap, 0),
         )
+
+    def run(self) -> None:
+        settings = self._collect()
+        if settings is None:
+            return
+        accept = allowed_up_to(_int_of(self.allowed, 1))
         try:
-            if self.mode.get() == "greedy":
-                result = simulate_greedy(problem)
-            else:
-                result = simulate_limited(problem, _int_of(self.cap, 0))
+            result = simulate_with(settings, accept)
         except SearchTooLarge:
             return messagebox.showwarning(
                 "계산이 너무 커요",
                 "상한 스탯이 있을 때 이 모드는 경우의 수가 너무 많아졌어요.\n"
                 "'허용 줄이 나올 때까지 순서대로 삭제' 모드를 쓰거나, 목표 레벨 범위·전직변경 상한을 줄여보세요.")
-        over = [f"{s.label}({current[s]}/{caps[s]})" for s in caps if current.get(s, 0) > caps[s]]
-        self._show(result, accept, preset, current, caps, over)
+        over = [f"{s.label}({settings.current[s]}/{settings.caps[s]})"
+                for s in settings.caps if settings.current.get(s, 0) > settings.caps[s]]
+        self._show(result, accept, settings.preset, settings.current, settings.caps, over)
+
+    def open_final(self) -> None:
+        settings = self._collect()
+        if settings is not None:
+            FinalResultWindow(self, settings)
 
     def _show(self, result: PathResult, accept: Callable[[int], bool], preset: Preset,
               current: dict, caps: dict, over: list[str]) -> None:

@@ -1,0 +1,352 @@
+{
+  "presets": [
+    {
+      "name": "물리 딜러",
+      "ranks": [
+        {
+          "required": [
+            "힘",
+            "속도"
+          ],
+          "optional": [],
+          "optional_min": 0,
+          "min_count": 2,
+          "max_count": 9
+        },
+        {
+          "required": [
+            "방어"
+          ],
+          "optional": [
+            "HP",
+            "힘",
+            "기술"
+          ],
+          "optional_min": 1,
+          "min_count": 3,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 0,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 0,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 0,
+          "min_count": 0,
+          "max_count": 9
+        }
+      ]
+    },
+    {
+      "name": "마법 딜러",
+      "ranks": [
+        {
+          "required": [
+            "마력",
+            "속도"
+          ],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 2,
+          "max_count": 9
+        },
+        {
+          "required": [
+            "마력",
+            "마방"
+          ],
+          "optional": [
+            "HP",
+            "기술"
+          ],
+          "optional_min": 1,
+          "min_count": 3,
+          "max_count": 4
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        }
+      ]
+    },
+    {
+      "name": "중갑 탱커",
+      "ranks": [
+        {
+          "required": [
+            "힘",
+            "방어"
+          ],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 2,
+          "max_count": 9
+        },
+        {
+          "required": [
+            "HP",
+            "방어"
+          ],
+          "optional": [
+            "힘",
+            "기술"
+          ],
+          "optional_min": 1,
+          "min_count": 3,
+          "max_count": 4
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        }
+      ]
+    },
+    {
+      "name": "회피 탱커",
+      "ranks": [
+        {
+          "required": [
+            "속도",
+            "행운"
+          ],
+          "optional": [
+            "힘",
+            "마력"
+          ],
+          "optional_min": 1,
+          "min_count": 3,
+          "max_count": 9
+        },
+        {
+          "required": [
+            "속도",
+            "기술"
+          ],
+          "optional": [
+            "HP",
+            "행운"
+          ],
+          "optional_min": 1,
+          "min_count": 3,
+          "max_count": 4
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        }
+      ]
+    },
+    {
+      "name": "힐러",
+      "ranks": [
+        {
+          "required": [
+            "마력",
+            "속도"
+          ],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 2,
+          "max_count": 9
+        },
+        {
+          "required": [
+            "마력",
+            "마방"
+          ],
+          "optional": [
+            "HP",
+            "기술"
+          ],
+          "optional_min": 1,
+          "min_count": 3,
+          "max_count": 4
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        }
+      ]
+    },
+    {
+      "name": "물리/마법 딜러",
+      "ranks": [
+        {
+          "required": [
+            "속도"
+          ],
+          "optional": [
+            "힘",
+            "마력"
+          ],
+          "optional_min": 1,
+          "min_count": 2,
+          "max_count": 9
+        },
+        {
+          "required": [
+            "힘",
+            "마력"
+          ],
+          "optional": [
+            "방어",
+            "마방"
+          ],
+          "optional_min": 1,
+          "min_count": 3,
+          "max_count": 4
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        }
+      ]
+    },
+    {
+      "name": "물리/힐러",
+      "ranks": [
+        {
+          "required": [
+            "힘",
+            "속도"
+          ],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 2,
+          "max_count": 9
+        },
+        {
+          "required": [
+            "힘",
+            "마력"
+          ],
+          "optional": [
+            "HP",
+            "방어"
+          ],
+          "optional_min": 1,
+          "min_count": 3,
+          "max_count": 4
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        },
+        {
+          "required": [],
+          "optional": [],
+          "optional_min": 1,
+          "min_count": 0,
+          "max_count": 9
+        }
+      ]
+    }
+  ]
+}
